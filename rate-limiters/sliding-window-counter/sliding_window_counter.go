@@ -34,6 +34,11 @@ func NewSlidingWindowCounter(r *redis.Client, limit int, window time.Duration) *
 
 func (swc *SlidingWindowCounter) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.URL.Path == "/free" {
+			c.Next()
+			return
+		}
+
 		ip := c.ClientIP()
 		key := fmt.Sprintf("swc:ip:%s", ip)
 

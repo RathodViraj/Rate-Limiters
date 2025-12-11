@@ -59,6 +59,11 @@ func (lb *LeakyBucket) startLeaking() {
 
 func (lb *LeakyBucket) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.URL.Path == "/free" {
+			c.Next()
+			return
+		}
+
 		select {
 		case lb.queue <- struct{}{}:
 			c.Next()

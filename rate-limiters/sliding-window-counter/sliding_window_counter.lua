@@ -9,34 +9,29 @@ local now = tonumber(ARGV[1])
 local window = tonumber(ARGV[2])
 local limit = tonumber(ARGV[3])
 
--- Compute window boundaries
 local current_window = now - (now % window)
 local prev_window = current_window - window
 
 local current_key = base .. ":w:" .. current_window
 local prev_key = base .. ":w:" .. prev_window
 
--- Fetch counts (or zero)
 local current_count = tonumber(redis.call("GET", current_key) or "0")
 local prev_count = tonumber(redis.call("GET", prev_key) or "0")
 
--- Time passed in current window
 local elapsed = now - current_window
-local weight = elapsed / window    -- range: 0.0 to 1.0
+local weight = elapsed / window
 
 -- Weighted sliding window formula
 local total = current_count + (1 - weight) * prev_count
 
 -- Check limit
 if total >= limit then
-    -- Over limit → calculate retry_after
     local retry_after = window - elapsed
     return {0, total, retry_after}  -- request rejected
 end
 
--- Accept request → increment current window
 redis.call("INCR", current_key)
-redis.call("EXPIRE", current_key, window * 2)  -- safe TTL
+redis.call("EXPIRE", current_key, window * 2)
 
 -- Return success
 return {1, total + 1, 0}

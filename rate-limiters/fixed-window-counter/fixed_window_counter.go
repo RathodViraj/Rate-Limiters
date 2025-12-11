@@ -27,6 +27,11 @@ func NewFixedWindowCounter(limit int, windowSize int64) *FixedWindowCounter {
 
 func (fwc *FixedWindowCounter) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.URL.Path == "/free" {
+			c.Next()
+			return
+		}
+
 		idx := (time.Now().Unix() - fwc.startTime) / fwc.windowSize
 		valid := true
 		fwc.mu.Lock()
@@ -40,9 +45,6 @@ func (fwc *FixedWindowCounter) Middleware() gin.HandlerFunc {
 			fwc.counters[idx] = 1
 		}
 		fwc.mu.Unlock()
-		// for k, v := range fwc.counters {
-		// 	fmt.Println(k, " -> ", v)
-		// }
 
 		if !valid {
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded"})

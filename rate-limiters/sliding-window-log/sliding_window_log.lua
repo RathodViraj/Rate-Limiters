@@ -11,13 +11,10 @@ local limit = tonumber(ARGV[3])
 -- remove timestamps outside the window
 redis.call('ZREMRANGEBYSCORE', key, '-inf', now - window)
 
--- add current timestamp
 redis.call('ZADD', key, now, now)
 
--- count requests in the window
 local count = redis.call('ZCARD', key)
 
--- set expiration slightly > window
 redis.call('EXPIRE', key, math.ceil(window / 1000) + 1)
 
 -- return 1 if allowed, 0 if limit exceeded

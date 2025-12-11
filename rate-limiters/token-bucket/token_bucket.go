@@ -25,6 +25,12 @@ func NewTokenBucketRL(fd time.Duration, max uint32) *TokenBucket {
 
 func (tb *TokenBucket) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Skip rate limiting for /free endpoint
+		if c.Request.URL.Path == "/free" {
+			c.Next()
+			return
+		}
+
 		canHandle := true
 		tb.mu.Lock()
 		if tb.Tokens > 0 {

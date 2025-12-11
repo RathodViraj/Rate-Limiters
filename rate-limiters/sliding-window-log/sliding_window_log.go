@@ -33,6 +33,12 @@ func NewRateLimiter(r *redis.Client, limit int, window time.Duration) (*RateLimi
 
 func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Skip rate limiting for /free endpoint
+		if c.Request.URL.Path == "/free" {
+			c.Next()
+			return
+		}
+
 		ip := c.ClientIP()
 		key := fmt.Sprintf("swl:ip:%s", ip)
 		now := time.Now().UnixMilli()

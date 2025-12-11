@@ -2,7 +2,8 @@ package main
 
 import (
 	"rate-limiter-strategies/db"
-	slidingwindowcounter "rate-limiter-strategies/rate-limiters/sliding-window-counter"
+	leaky_bucket "rate-limiter-strategies/rate-limiters/leaky-bucket"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,9 +16,9 @@ func main() {
 
 	r := gin.Default()
 
-	// lb := leaky_bucket.NewLeakyBucket(8, 100*time.Millisecond)
-	// defer lb.Stop()
-	// r.Use(lb.Middleware())
+	lb := leaky_bucket.NewLeakyBucket(3, 1000*time.Millisecond)
+	defer lb.Stop()
+	r.Use(lb.Middleware())
 
 	// tb := tokenbucket.NewTokenBucketRL(time.Duration(5)*time.Second, 3)
 	// go tb.StartFiller()
@@ -32,10 +33,16 @@ func main() {
 	// }
 	// r.Use(swl.Middleware())
 
-	swc := slidingwindowcounter.NewSlidingWindowCounter(rdb, 3, 5)
-	r.Use(swc.Middleware())
+	// swc := slidingwindowcounter.NewSlidingWindowCounter(rdb, 3, 5)
+	// r.Use(swc.Middleware())
 
 	r.GET("/home", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Welcome to the home page!",
+		})
+	})
+
+	r.GET("/free", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Welcome to the home page!",
 		})
