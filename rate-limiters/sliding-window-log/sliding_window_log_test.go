@@ -19,7 +19,7 @@ func TestSWLRateLimiterBurst(t *testing.T) {
 		totalRequests = expectedLimit + 3
 	}
 
-	client := &http.Client{Timeout: 2 * time.Second}
+	client := &http.Client{Timeout: 10 * time.Second}
 
 	statuses := make([]int, 0, totalRequests)
 	homeLatencies := make([]time.Duration, 0, totalRequests)

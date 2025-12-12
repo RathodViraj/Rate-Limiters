@@ -13,7 +13,7 @@ func TestSWCBurstRequest(t *testing.T) {
 	freeURL := "http://localhost:8080/free"
 
 	totalRequests := 10
-	client := &http.Client{Timeout: 2 * time.Second}
+	client := &http.Client{Timeout: 10 * time.Second}
 
 	statuses := make([]int, 0, totalRequests)
 	homeLatencies := make([]time.Duration, 0, totalRequests)

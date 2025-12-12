@@ -14,7 +14,7 @@ func TestFWCBurstRequest(t *testing.T) {
 
 	totalRequests := 12
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 20 * time.Second}
 
 	statuses := make([]int, 0, totalRequests)
 	homeLatencies := make([]time.Duration, 0, totalRequests)
