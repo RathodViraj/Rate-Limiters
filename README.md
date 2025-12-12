@@ -275,5 +275,6 @@ go run cmd/main.go
 
 ## References
 - https://bytebytego.com/courses/system-design-interview/design-a-rate-limiter
+- https://youtu.be/CVItTb_jdkE?si=mAn-B9bXuUTx2JFY
 
 
