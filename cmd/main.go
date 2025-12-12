@@ -16,7 +16,7 @@ func main() {
 
 	r := gin.Default()
 
-	lb := leaky_bucket.NewLeakyBucket(3, 1000*time.Millisecond)
+	lb := leaky_bucket.NewLeakyBucket(8, 100*time.Millisecond)
 	defer lb.Stop()
 	r.Use(lb.Middleware())
 

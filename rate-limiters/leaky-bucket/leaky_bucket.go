@@ -9,8 +9,8 @@ import (
 )
 
 type LeakyBucket struct {
-	queue       chan struct{}
-	maxQueue    int
+	tokens      int
+	maxTokens   int
 	leakRate    time.Duration
 	mu          sync.Mutex
 	stopChannel chan struct{}
@@ -23,8 +23,8 @@ func NewLeakyBucket(maxQueue int, leakRate time.Duration) *LeakyBucket {
 	}
 
 	lb := &LeakyBucket{
-		queue:       make(chan struct{}, maxQueue),
-		maxQueue:    maxQueue,
+		tokens:      0,
+		maxTokens:   maxQueue,
 		leakRate:    leakRate,
 		stopChannel: make(chan struct{}),
 	}
@@ -45,14 +45,11 @@ func (lb *LeakyBucket) startLeaking() {
 		case <-lb.stopChannel:
 			return
 		case <-ticker.C:
-			select {
-			case <-lb.queue:
-				// Request processed, do nothing
-			case <-lb.stopChannel:
-				return
-			default:
-				// Queue is empty
+			lb.mu.Lock()
+			if lb.tokens > 0 {
+				lb.tokens--
 			}
+			lb.mu.Unlock()
 		}
 	}
 }
@@ -64,10 +61,13 @@ func (lb *LeakyBucket) Middleware() gin.HandlerFunc {
 			return
 		}
 
-		select {
-		case lb.queue <- struct{}{}:
+		lb.mu.Lock()
+		if lb.tokens < lb.maxTokens {
+			lb.tokens++
+			lb.mu.Unlock()
 			c.Next()
-		default:
+		} else {
+			lb.mu.Unlock()
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded"})
 		}
 	}
